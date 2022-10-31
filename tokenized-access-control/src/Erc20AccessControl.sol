@@ -71,6 +71,9 @@ contract ERC20AccessControl is IAccessControlRegistry {
         uint256 adminMinimumBalance;
     }
 
+    /// @notice name of access control mechanism
+    string public constant name = "ERC20AccessControl";
+
     /// @notice access information mapping storage
     /// @dev curation contract => AccessLevelInfo struct
     mapping(address => AccessLevelInfo) public accessMapping;
