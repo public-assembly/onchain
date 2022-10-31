@@ -34,6 +34,33 @@ contract ERC20AccessControlTest is DSTest {
         vm.stopPrank();
     }
 
+    function test_initializeWithData() public {
+        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+        uint256 tokenBalance = 8.08 ether;
+        erc20Curator.mint(DEFAULT_OWNER_ADDRESS, tokenBalance);
+        ERC20AccessControl e20AccessControl = new ERC20AccessControl();
+
+        bytes memory accessControlInit = abi.encode(
+            erc20Curator,
+            erc20Manager,
+            erc20Admin,
+            tokenBalance,
+            tokenBalance,
+            tokenBalance
+        );
+
+        e20AccessControl.initializeWithData(accessControlInit);
+
+        ERC20AccessControl.AccessLevelInfo memory info = e20AccessControl
+            .getAccessInfo(DEFAULT_OWNER_ADDRESS);
+        assertEq(address(info.curatorAccess), address(erc20Curator));
+        assertEq(address(info.managerAccess), address(erc20Manager));
+        assertEq(address(info.adminAccess), address(erc20Admin));
+        assertEq(info.curatorMinimumBalance, 8.08 ether);
+        assertEq(info.managerMinimumBalance, 8.08 ether);
+        assertEq(info.adminMinimumBalance, 8.08 ether);
+    }
+
     function test_CuratorAccess() public {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
         uint256 tokenBalance = 8.08 ether;
@@ -41,11 +68,14 @@ contract ERC20AccessControlTest is DSTest {
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
 
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            tokenBalance,
+            tokenBalance,
+            tokenBalance
         );
         vm.stopPrank();
         updateMinimumBalances(e20AccessControl, mockCurator);
@@ -72,11 +102,14 @@ contract ERC20AccessControlTest is DSTest {
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
 
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            tokenBalance,
+            tokenBalance,
+            tokenBalance
         );
         assertTrue(
             mockCurator.accessControlProxy() == address(e20AccessControl)
@@ -101,11 +134,14 @@ contract ERC20AccessControlTest is DSTest {
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
 
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            tokenBalance,
+            tokenBalance,
+            tokenBalance
         );
         assertTrue(
             mockCurator.accessControlProxy() == address(e20AccessControl)
@@ -130,11 +166,14 @@ contract ERC20AccessControlTest is DSTest {
         erc20Curator.mint(DEFAULT_OWNER_ADDRESS, tokenBalance);
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            tokenBalance,
+            tokenBalance,
+            tokenBalance
         );
         expectIsCurator(mockCurator);
 
@@ -156,11 +195,14 @@ contract ERC20AccessControlTest is DSTest {
         erc20Admin.mint(DEFAULT_OWNER_ADDRESS, tokenBalance);
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            tokenBalance,
+            tokenBalance,
+            tokenBalance
         );
         expectIsAdmin(mockCurator);
 
@@ -194,11 +236,14 @@ contract ERC20AccessControlTest is DSTest {
         erc20Curator.mint(DEFAULT_OWNER_ADDRESS, tokenBalance);
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            1,
+            1,
+            1
         );
         ERC20AccessControl.AccessLevelInfo
             memory newAccessLevel = e20AccessControl.getAccessInfo(
@@ -230,11 +275,14 @@ contract ERC20AccessControlTest is DSTest {
         erc20Manager.mint(DEFAULT_OWNER_ADDRESS, tokenBalance);
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            1,
+            1,
+            1
         );
         ERC20AccessControl.AccessLevelInfo
             memory newAccessLevel = e20AccessControl.getAccessInfo(
@@ -265,11 +313,14 @@ contract ERC20AccessControlTest is DSTest {
         erc20Admin.mint(DEFAULT_OWNER_ADDRESS, tokenBalance);
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            1,
+            1,
+            1
         );
         ERC20AccessControl.AccessLevelInfo
             memory newAccessLevel = e20AccessControl.getAccessInfo(
@@ -295,11 +346,14 @@ contract ERC20AccessControlTest is DSTest {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();
         MockCurator mockCurator = new MockCurator();
-        mockCurator.initializeAccessControl(
+        mockCurator.initializeERC20AccessControl(
             address(e20AccessControl),
             address(erc20Curator),
             address(erc20Manager),
-            address(erc20Admin)
+            address(erc20Admin),
+            1,
+            1,
+            1
         );
         expectNoAccess(mockCurator);
         erc20Curator.mint(DEFAULT_OWNER_ADDRESS, 1);

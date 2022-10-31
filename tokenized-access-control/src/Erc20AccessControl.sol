@@ -179,16 +179,25 @@ contract ERC20AccessControl is IAccessControlRegistry {
     /// @dev called by other contracts initiating access control
     /// @dev data format: curatorAccess, managerAccess, adminAccess
     function initializeWithData(bytes memory data) external {
-        (IERC20 curatorAccess, IERC20 managerAccess, IERC20 adminAccess) = abi
-            .decode(data, (IERC20, IERC20, IERC20));
+        (
+            IERC20 curatorAccess,
+            IERC20 managerAccess,
+            IERC20 adminAccess,
+            uint256 curatorMinimumBalance,
+            uint256 managerMinimumBalance,
+            uint256 adminMinimumBalance
+        ) = abi.decode(
+                data,
+                (IERC20, IERC20, IERC20, uint256, uint256, uint256)
+            );
 
         accessMapping[msg.sender] = AccessLevelInfo({
             curatorAccess: curatorAccess,
             managerAccess: managerAccess,
             adminAccess: adminAccess,
-            curatorMinimumBalance: 1,
-            managerMinimumBalance: 1,
-            adminMinimumBalance: 1
+            curatorMinimumBalance: curatorMinimumBalance,
+            managerMinimumBalance: managerMinimumBalance,
+            adminMinimumBalance: adminMinimumBalance
         });
 
         emit AccessControlInitialized({
