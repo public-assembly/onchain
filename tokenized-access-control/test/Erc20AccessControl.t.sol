@@ -342,6 +342,15 @@ contract ERC20AccessControlTest is DSTest {
         expectNoAccess(mockCurator);
     }
 
+    function test_revertIfNotCurated() public {
+        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+        ERC20AccessControl e20AccessControl = new ERC20AccessControl();
+        vm.stopPrank();
+        vm.startPrank(DEFAULT_ADMIN_ADDRESS);
+        vm.expectRevert(0xd556248d);
+        e20AccessControl.getAccessLevel(DEFAULT_NON_OWNER_ADDRESS);
+    }
+
     function test_getAccessLevel() public {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
         ERC20AccessControl e20AccessControl = new ERC20AccessControl();

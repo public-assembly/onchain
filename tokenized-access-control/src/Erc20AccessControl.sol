@@ -12,6 +12,12 @@ contract ERC20AccessControl is IAccessControlRegistry {
     /// @notice Error for only admin access
     error Access_OnlyAdmin();
 
+    /// @notice Error for zero-address curator contract
+    error Access_RequireCuration();
+
+    /// @notice Error for zero curation minimum balance
+    error Access_RequireCurationMinimumBalance();
+
     //////////////////////////////////////////////////
     // EVENTS
     //////////////////////////////////////////////////
@@ -222,6 +228,7 @@ contract ERC20AccessControl is IAccessControlRegistry {
         address target = msg.sender;
 
         AccessLevelInfo memory info = accessMapping[target];
+        requireCurated(info);
 
         if (
             info.adminAccess.balanceOf(addressToCheckLevel) >
@@ -281,5 +288,16 @@ contract ERC20AccessControl is IAccessControlRegistry {
         returns (IERC20)
     {
         return accessMapping[addressToCheck].adminAccess;
+    }
+
+    /// @notice required curation set to non-zero values
+    function requireCurated(AccessLevelInfo memory info) internal pure {
+        if (address(info.curatorAccess) == address(0)) {
+            revert Access_RequireCuration();
+        }
+
+        if (info.curatorMinimumBalance == 0) {
+            revert Access_RequireCurationMinimumBalance();
+        }
     }
 }
