@@ -7,7 +7,6 @@ import {Clones} from "openzeppelin-contracts/proxy/Clones.sol";
 contract CustomPricingMinterFactory {
     // The address of the base CustomPricingMinter implementation
     address public immutable customPricingMinterImpl;
-    
 
     event CustomPricingMinterCreated(address newCustomPricingMinter, address deployer);
 
@@ -27,6 +26,9 @@ contract CustomPricingMinterFactory {
         uint256 _bundleQuantity
     ) external returns (address newCustomPricingMinter) {
         newCustomPricingMinter = Clones.clone(customPricingMinterImpl);
+        CustomPricingMinter(newCustomPricingMinter).initialize(
+            _nonBundlePricePerToken, _bundlePricePerToken, _bundleQuantity
+        );
         emit CustomPricingMinterCreated(newCustomPricingMinter, msg.sender);
     }
 }
