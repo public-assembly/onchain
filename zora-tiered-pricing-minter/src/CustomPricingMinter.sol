@@ -3,16 +3,17 @@ pragma solidity ^0.8.15;
 
 import {Ownable} from "openzeppelin-contracts/access/ownable.sol";
 import {ReentrancyGuard} from "openzeppelin-contracts/security/ReentrancyGuard.sol";
+import {Initializable} from "openzeppelin-contracts/proxy/utils/Initializable.sol";
 import {ERC721DropMinterInterface} from "./ERC721DropMinterInterface.sol";
 
 /**
  * @notice Adds custom pricing tier logic to standard ZORA Drop contracts
  * @dev Only compatible with ZORA Drop contracts that inherit ERC721Drop
- * @author max@ourzora.com
+ * @author max@ourzora.co
  *
  */
 
-contract CustomPricingMinter is Ownable, ReentrancyGuard {
+contract CustomPricingMinter is Ownable, ReentrancyGuard, Initializable {
     // ===== ERRORS =====
     /// @notice Action is unable to complete because msg.value is incorrect
     error WrongPrice();
@@ -49,41 +50,37 @@ contract CustomPricingMinter is Ownable, ReentrancyGuard {
     uint256 public bundlePricePerToken;
     uint256 public bundleQuantity;
 
-    // ===== CONSTRUCTOR =====
-    constructor(
-        uint256 _nonBundlePricePerToken,
-        uint256 _bundlePricePerToken,
-        uint256 _bundleQuantity
-    ) {
+    // ===== INITIALIZER =====
+    function initialize(uint256 _nonBundlePricePerToken, uint256 _bundlePricePerToken, uint256 _bundleQuantity)
+        external
+        initializer
+    {
         nonBundlePricePerToken = _nonBundlePricePerToken;
         bundlePricePerToken = _bundlePricePerToken;
         bundleQuantity = _bundleQuantity;
     }
 
     /**
-     *** ---------------------------------- ***
-     ***                                    ***
-     ***      PUBLIC MINTING FUNCTIONS      ***
-     ***                                    ***
-     *** ---------------------------------- ***
-     ***/
+     * ---------------------------------- ***
+     *                                    ***
+     *      PUBLIC MINTING FUNCTIONS      ***
+     *                                    ***
+     * ---------------------------------- ***
+     *
+     */
 
     /// @dev calls nonBundle or bundle mint function depending on quantity entered
     /// @param zoraDrop ZORA Drop contract to mint from
     /// @param mintRecipient address to recieve minted tokens
     /// @param quantity number of tokens to mint
-    function flexibleMint(
-        address zoraDrop,
-        address mintRecipient,
-        uint256 quantity
-    ) external payable nonReentrant returns (uint256) {
+    function flexibleMint(address zoraDrop, address mintRecipient, uint256 quantity)
+        external
+        payable
+        nonReentrant
+        returns (uint256)
+    {
         // check if CustomPricingMinter contract has MINTER_ROLE on target ZORA Drop contract
-        if (
-            !ERC721DropMinterInterface(zoraDrop).hasRole(
-                MINTER_ROLE,
-                address(this)
-            )
-        ) {
+        if (!ERC721DropMinterInterface(zoraDrop).hasRole(MINTER_ROLE, address(this))) {
             revert MinterNotAuthorized();
         }
 
@@ -97,10 +94,10 @@ contract CustomPricingMinter is Ownable, ReentrancyGuard {
             _nonBundleMint(zoraDrop, mintRecipient, quantity);
 
             // Transfer funds to zora drop contract
-            (bool nonBundleSuccess, ) = zoraDrop.call{value: msg.value}("");
+            (bool nonBundleSuccess,) = zoraDrop.call{value: msg.value}("");
             if (!nonBundleSuccess) {
                 revert TransferNotSuccessful();
-            }            
+            }
 
             return quantity;
         }
@@ -113,7 +110,7 @@ contract CustomPricingMinter is Ownable, ReentrancyGuard {
         _bundleMint(zoraDrop, mintRecipient, quantity);
 
         // Transfer funds to zora drop contract
-        (bool bundleSuccess, ) = zoraDrop.call{value: msg.value}("");
+        (bool bundleSuccess,) = zoraDrop.call{value: msg.value}("");
         if (!bundleSuccess) {
             revert TransferNotSuccessful();
         }
@@ -122,48 +119,34 @@ contract CustomPricingMinter is Ownable, ReentrancyGuard {
     }
 
     /**
-     *** ---------------------------------- ***
-     ***                                    ***
-     ***     INTERNAL MINTING FUNCTIONS     ***
-     ***                                    ***
-     *** ---------------------------------- ***
-     ***/
+     * ---------------------------------- ***
+     *                                    ***
+     *     INTERNAL MINTING FUNCTIONS     ***
+     *                                    ***
+     * ---------------------------------- ***
+     *
+     */
 
-    function _nonBundleMint(
-        address zoraDrop,
-        address mintRecipient,
-        uint256 quantity
-    ) internal {
+    function _nonBundleMint(address zoraDrop, address mintRecipient, uint256 quantity) internal {
         // call admintMint function on target ZORA contract
         ERC721DropMinterInterface(zoraDrop).adminMint(mintRecipient, quantity);
-        emit NonBundleMint(
-            msg.sender,
-            quantity,
-            quantity * nonBundlePricePerToken
-        );
+        emit NonBundleMint(msg.sender, quantity, quantity * nonBundlePricePerToken);
     }
 
-    function _bundleMint(
-        address zoraDrop,
-        address mintRecipient,
-        uint256 quantity
-    ) internal {
+    function _bundleMint(address zoraDrop, address mintRecipient, uint256 quantity) internal {
         // call admintMint function on target ZORA contract
         ERC721DropMinterInterface(zoraDrop).adminMint(mintRecipient, quantity);
-        emit NonBundleMint(
-            msg.sender,
-            quantity,
-            quantity * bundlePricePerToken
-        );
+        emit NonBundleMint(msg.sender, quantity, quantity * bundlePricePerToken);
     }
 
     /**
-     *** ---------------------------------- ***
-     ***                                    ***
-     ***          ADMIN FUNCTIONS           ***
-     ***                                    ***
-     *** ---------------------------------- ***
-     ***/
+     * ---------------------------------- ***
+     *                                    ***
+     *          ADMIN FUNCTIONS           ***
+     *                                    ***
+     * ---------------------------------- ***
+     *
+     */
 
     /// @dev updates nonBundlePricePerToken variable
     /// @param newPrice new nonBundlePricePerToken value
@@ -190,12 +173,13 @@ contract CustomPricingMinter is Ownable, ReentrancyGuard {
     }
 
     /**
-     *** ---------------------------------- ***
-     ***                                    ***
-     ***           VIEW FUNCTIONS           ***
-     ***                                    ***
-     *** ---------------------------------- ***
-     ***/
+     * ---------------------------------- ***
+     *                                    ***
+     *           VIEW FUNCTIONS           ***
+     *                                    ***
+     * ---------------------------------- ***
+     *
+     */
 
     function fullBundlePrice() external view returns (uint256) {
         return bundlePricePerToken * bundleQuantity;
