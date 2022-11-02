@@ -1,3 +1,0 @@
-[submodule "zora-tiered-pricing-minter/lib/openzeppelin-contracts-upgradeable"]
-	path = zora-tiered-pricing-minter/lib/openzeppelin-contracts-upgradeable
-	url = https://github.com/openzeppelin/openzeppelin-contracts-upgradeable

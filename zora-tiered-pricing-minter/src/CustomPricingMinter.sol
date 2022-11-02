@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import {Initializable} from "openzeppelin-contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ReentrancyGuardUpgradeable} from "openzeppelin-contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Ownable} from "curation-protocol/lib/utils/Ownable.sol";
 import {ERC721DropMinterInterface} from "./ERC721DropMinterInterface.sol";
 
 /**
@@ -13,7 +12,7 @@ import {ERC721DropMinterInterface} from "./ERC721DropMinterInterface.sol";
  *
  */
 
-contract CustomPricingMinter is Initializable, ReentrancyGuardUpgradeable, OwnableUpgradeable {
+contract CustomPricingMinter is Ownable, ReentrancyGuardUpgradeable {
     // ===== ERRORS =====
     /// @notice Action is unable to complete because msg.value is incorrect
     error WrongPrice();
@@ -51,10 +50,13 @@ contract CustomPricingMinter is Initializable, ReentrancyGuardUpgradeable, Ownab
     uint256 public bundleQuantity;
 
     // ===== INITIALIZER =====
-    function initialize(uint256 _nonBundlePricePerToken, uint256 _bundlePricePerToken, uint256 _bundleQuantity)
-        external
-        initializer
-    {
+    function initialize(
+        address _owner,
+        uint256 _nonBundlePricePerToken,
+        uint256 _bundlePricePerToken,
+        uint256 _bundleQuantity
+    ) external initializer {
+        __Ownable_init(_owner);
         nonBundlePricePerToken = _nonBundlePricePerToken;
         bundlePricePerToken = _bundlePricePerToken;
         bundleQuantity = _bundleQuantity;
