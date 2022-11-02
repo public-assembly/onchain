@@ -9,6 +9,3 @@ out/
 
 # Dotenv file
 .env
-
-# Ignore zorb minter
-../zorb-minter/
