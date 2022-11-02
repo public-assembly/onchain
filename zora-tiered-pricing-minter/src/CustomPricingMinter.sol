@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import {Ownable} from "openzeppelin-contracts/access/ownable.sol";
-import {ReentrancyGuard} from "openzeppelin-contracts/security/ReentrancyGuard.sol";
-import {Initializable} from "openzeppelin-contracts/proxy/utils/Initializable.sol";
+import {Initializable} from "openzeppelin-contracts-upgradeable/proxy/utils/Initializable.sol";
+import {ReentrancyGuardUpgradeable} from "openzeppelin-contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ERC721DropMinterInterface} from "./ERC721DropMinterInterface.sol";
 
 /**
@@ -13,7 +13,7 @@ import {ERC721DropMinterInterface} from "./ERC721DropMinterInterface.sol";
  *
  */
 
-contract CustomPricingMinter is Ownable, ReentrancyGuard, Initializable {
+contract CustomPricingMinter is Initializable, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     // ===== ERRORS =====
     /// @notice Action is unable to complete because msg.value is incorrect
     error WrongPrice();
