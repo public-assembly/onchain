@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import {ReentrancyGuardUpgradeable} from "openzeppelin-contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "./utils/ReentrancyGuardUpgradeable.sol";
 import {Ownable} from "curation-protocol/lib/utils/Ownable.sol";
 import {ERC721DropMinterInterface} from "./ERC721DropMinterInterface.sol";
+// import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @notice Adds custom pricing tier logic to standard ZORA Drop contracts
@@ -57,10 +58,20 @@ contract CustomPricingMinter is Ownable, ReentrancyGuardUpgradeable {
         uint256 _bundleQuantity
     ) external initializer {
         __Ownable_init(_owner);
+        __ReentrancyGuard_init_unchained();
         nonBundlePricePerToken = _nonBundlePricePerToken;
         bundlePricePerToken = _bundlePricePerToken;
         bundleQuantity = _bundleQuantity;
     }
+
+    // ===== REQUIRED OVERRIDES =====
+    //  function _disableInitializers() internal override(Initializable) {
+    //     require(!_initializing, "Initializable: contract is initializing");
+    //     if (_initialized < type(uint8).max) {
+    //         _initialized = type(uint8).max;
+    //         emit Initialized(type(uint8).max);
+    //     }
+    // }
 
     /**
      * ---------------------------------- ***
