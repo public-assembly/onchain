@@ -13,8 +13,8 @@ import {ERC721DropProxy} from "zora-drops-contracts/ERC721DropProxy.sol";
 import {ZoraFeeManager} from "zora-drops-contracts/ZoraFeeManager.sol";
 import {FactoryUpgradeGate} from "zora-drops-contracts/FactoryUpgradeGate.sol";
 import {IMetadataRenderer} from "zora-drops-contracts/interfaces/IMetadataRenderer.sol";
-import {DummyMetadataRenderer} from "../src/utils/DummyMetadataRenderer.sol";
-import {MockUser} from "../src/utils/MockUser.sol";
+import {DummyMetadataRenderer} from "./utils/DummyMetadataRenderer.sol";
+import {MockUser} from "./utils/MockUser.sol";
 
 contract CustomPricingMinterTest is DSTest {
 
