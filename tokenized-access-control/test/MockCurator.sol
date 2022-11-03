@@ -30,6 +30,51 @@ contract MockCurator is Ownable {
         return(curatorAccess, managerAccess, adminAccess);
     }
 
+    function initializeERC20AccessControl(
+        address accessControl,
+        address curatorAccess,
+        address managerAccess,
+        address adminAccess,
+        uint256 curatorMinBal,
+        uint256 managerMinBal,
+        uint256 adminMinBal
+    )
+        public
+        onlyOwner
+        returns (
+            address,
+            address,
+            address,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        bytes memory accessControlInit = abi.encode(
+            curatorAccess,
+            managerAccess,
+            adminAccess,
+            curatorMinBal,
+            managerMinBal,
+            adminMinBal
+        );
+
+        IAccessControlRegistry(accessControl).initializeWithData(
+            accessControlInit
+        );
+
+        accessControlProxy = accessControl;
+
+        return (
+            curatorAccess,
+            managerAccess,
+            adminAccess,
+            curatorMinBal,
+            managerMinBal,
+            adminMinBal
+        );
+    }
+
     function getAccessLevelForUser() external view returns (uint256) {
 
         if (accessControlProxy == address(0)) {
