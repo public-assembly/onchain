@@ -21,13 +21,14 @@ contract CustomPricingMinterFactory {
      * @notice Initializes a new CustomPricingMinter contract using the CREATE opcode.
      */
     function createCustomPricingMinter(
+        address _owner,
         uint256 _nonBundlePricePerToken,
         uint256 _bundlePricePerToken,
         uint256 _bundleQuantity
     ) external returns (address newCustomPricingMinter) {
         newCustomPricingMinter = Clones.clone(customPricingMinterImpl);
         CustomPricingMinter(newCustomPricingMinter).initialize(
-            _nonBundlePricePerToken, _bundlePricePerToken, _bundleQuantity
+            _owner, _nonBundlePricePerToken, _bundlePricePerToken, _bundleQuantity
         );
         emit CustomPricingMinterCreated(newCustomPricingMinter, msg.sender);
     }

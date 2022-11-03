@@ -17,7 +17,6 @@ import {DummyMetadataRenderer} from "./utils/DummyMetadataRenderer.sol";
 import {MockUser} from "./utils/MockUser.sol";
 
 contract CustomPricingMinterTest is DSTest {
-
     // CustomPricingMinter Defaults
     uint256 nonBundlePrice = 1000000000000000; // 0.01 ETH
     uint256 bundlePrice = 5000000000000000; // 0.005 ETH
@@ -32,13 +31,11 @@ contract CustomPricingMinterTest is DSTest {
     ZoraFeeManager public feeManager;
     FactoryUpgradeGate public factoryUpgradeGate;
     address public constant DEFAULT_OWNER_ADDRESS = address(0x23499);
-    address payable public constant DEFAULT_FUNDS_RECIPIENT_ADDRESS =
-        payable(address(0x21303));
-    address payable public constant DEFAULT_ZORA_DAO_ADDRESS =
-        payable(address(0x999));
+    address payable public constant DEFAULT_FUNDS_RECIPIENT_ADDRESS = payable(address(0x21303));
+    address payable public constant DEFAULT_ZORA_DAO_ADDRESS = payable(address(0x999));
     address public constant UPGRADE_GATE_ADMIN_ADDRESS = address(0x942924224);
     address public constant mediaContract = address(0x123456);
-    address public impl;    
+    address public impl;
 
     struct Configuration {
         IMetadataRenderer metadataRenderer;
@@ -69,7 +66,7 @@ contract CustomPricingMinterTest is DSTest {
         });
 
         _;
-    }    
+    }
 
     // Sets up ZORA Drop architecture
     function setUp() public {
@@ -77,195 +74,172 @@ contract CustomPricingMinterTest is DSTest {
         feeManager = new ZoraFeeManager(500, DEFAULT_ZORA_DAO_ADDRESS);
         factoryUpgradeGate = new FactoryUpgradeGate(UPGRADE_GATE_ADMIN_ADDRESS);
         vm.prank(DEFAULT_ZORA_DAO_ADDRESS);
-        impl = address(
-            new ERC721Drop(feeManager, address(0x1234), factoryUpgradeGate)
-        );
-        address payable newDrop = payable(
-            address(new ERC721DropProxy(impl, ""))
-        );
+        impl = address(new ERC721Drop(feeManager, address(0x1234), factoryUpgradeGate));
+        address payable newDrop = payable(address(new ERC721DropProxy(impl, "")));
         zoraNFTBase = ERC721Drop(newDrop);
     }
 
     function test_GrantMinterRole() public setupZoraNFTBase(15) {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        CustomPricingMinter minterContract = new CustomPricingMinter(
-            nonBundlePrice,
-            bundlePrice,
-            defaultBundleQuantity
-        );
-        zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));   
+        CustomPricingMinter minterContract = new CustomPricingMinter();
+        zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         bool hasMinterRole = zoraNFTBase.hasRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         assertTrue(hasMinterRole);
     }
 
-    function test_NonBundleMint() public setupZoraNFTBase(15) { 
+    function test_NonBundleMint() public setupZoraNFTBase(15) {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        CustomPricingMinter minterContract = new CustomPricingMinter(
-            nonBundlePrice,
-            bundlePrice,
-            defaultBundleQuantity
-        );
+        CustomPricingMinter minterContract = new CustomPricingMinter();
         zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         vm.stopPrank();
         address flexibleMintCaller = address(1);
         vm.deal(flexibleMintCaller, 1 ether);
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: nonBundlePrice * defaultNonBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultNonBundleQuantity);
+        minterContract.flexibleMint{value: nonBundlePrice * defaultNonBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultNonBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, defaultNonBundleQuantity);
         assertEq(flexibleMintCaller.balance, 1 ether - (nonBundlePrice * defaultNonBundleQuantity));
     }
 
-    function test_BundleMint() public setupZoraNFTBase(15) { 
+    function test_BundleMint() public setupZoraNFTBase(15) {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        CustomPricingMinter minterContract = new CustomPricingMinter(
-            nonBundlePrice,
-            bundlePrice,
-            defaultBundleQuantity
-        );
+        CustomPricingMinter minterContract = new CustomPricingMinter();
         zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         vm.stopPrank();
         address flexibleMintCaller = address(1);
         vm.deal(flexibleMintCaller, 1 ether);
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, defaultBundleQuantity);
         assertEq(flexibleMintCaller.balance, 1 ether - (bundlePrice * defaultBundleQuantity));
-    }    
+    }
 
-    function test_setBundlePrice() public setupZoraNFTBase(21) { 
-
+    function test_setBundlePrice() public setupZoraNFTBase(21) {
         uint256 newBundlePrice = 6000000000000000; // 0.006 ETH
 
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        CustomPricingMinter minterContract = new CustomPricingMinter(
-            nonBundlePrice,
-            bundlePrice,
-            defaultBundleQuantity
-        );
+        CustomPricingMinter minterContract = new CustomPricingMinter();
         zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         vm.stopPrank();
         address flexibleMintCaller = address(1);
         vm.deal(flexibleMintCaller, 1 ether);
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, defaultBundleQuantity);
         assertEq(flexibleMintCaller.balance, 1 ether - (bundlePrice * defaultBundleQuantity));
         vm.stopPrank();
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
         vm.deal(DEFAULT_OWNER_ADDRESS, 1 ether);
-        minterContract.setBundlePricePerToken(newBundlePrice); 
-        assertEq(minterContract.bundlePricePerToken(), newBundlePrice);            
+        minterContract.setBundlePricePerToken(newBundlePrice);
+        assertEq(minterContract.bundlePricePerToken(), newBundlePrice);
         vm.expectRevert();
         // flexibleMint should fail because it is passing in msg.value based on old bundlePrice
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         vm.stopPrank();
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: newBundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: newBundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, (defaultBundleQuantity * 2));
-        assertEq(flexibleMintCaller.balance, 1 ether - (bundlePrice * defaultBundleQuantity) - (newBundlePrice * defaultBundleQuantity));
-    }        
+        assertEq(
+            flexibleMintCaller.balance,
+            1 ether - (bundlePrice * defaultBundleQuantity) - (newBundlePrice * defaultBundleQuantity)
+        );
+    }
 
-    function test_setNonBundlePrice() public setupZoraNFTBase(21) { 
-
+    function test_setNonBundlePrice() public setupZoraNFTBase(21) {
         uint256 newNonBundlePrice = 2000000000000000; // 0.02 ETH
 
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        CustomPricingMinter minterContract = new CustomPricingMinter(
-            nonBundlePrice,
-            bundlePrice,
-            defaultBundleQuantity
-        );
+        CustomPricingMinter minterContract = new CustomPricingMinter();
         zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         vm.stopPrank();
         address flexibleMintCaller = address(1);
         vm.deal(flexibleMintCaller, 1 ether);
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, defaultBundleQuantity);
         assertEq(flexibleMintCaller.balance, 1 ether - (bundlePrice * defaultBundleQuantity));
         vm.stopPrank();
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
         vm.deal(DEFAULT_OWNER_ADDRESS, 1 ether);
-        minterContract.setBundlePricePerToken(newNonBundlePrice); 
-        assertEq(minterContract.bundlePricePerToken(), newNonBundlePrice);            
+        minterContract.setBundlePricePerToken(newNonBundlePrice);
+        assertEq(minterContract.bundlePricePerToken(), newNonBundlePrice);
         vm.expectRevert();
         // flexibleMint should fail because it is passing in msg.value based on old nonBundlePrice
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         vm.stopPrank();
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: newNonBundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: newNonBundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, (defaultBundleQuantity * 2));
-        assertEq(flexibleMintCaller.balance, 1 ether - (bundlePrice * defaultBundleQuantity) - (newNonBundlePrice * defaultBundleQuantity));
-    }            
+        assertEq(
+            flexibleMintCaller.balance,
+            1 ether - (bundlePrice * defaultBundleQuantity) - (newNonBundlePrice * defaultBundleQuantity)
+        );
+    }
 
-    function test_setBundleQuantity() public setupZoraNFTBase(31) { 
-
+    function test_setBundleQuantity() public setupZoraNFTBase(31) {
         uint256 newBundleQuantity = 11;
 
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        CustomPricingMinter minterContract = new CustomPricingMinter(
-            nonBundlePrice,
-            bundlePrice,
-            defaultBundleQuantity
-        );
+        CustomPricingMinter minterContract = new CustomPricingMinter();
         zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         vm.stopPrank();
         address flexibleMintCaller = address(1);
         vm.deal(flexibleMintCaller, 1 ether);
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, defaultBundleQuantity);
         assertEq(flexibleMintCaller.balance, 1 ether - (bundlePrice * defaultBundleQuantity));
         vm.stopPrank();
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
         vm.deal(DEFAULT_OWNER_ADDRESS, 1 ether);
-        minterContract.setBundleQuantity(newBundleQuantity); 
-        assertEq(minterContract.bundleQuantity(), newBundleQuantity);         
+        minterContract.setBundleQuantity(newBundleQuantity);
+        assertEq(minterContract.bundleQuantity(), newBundleQuantity);
         vm.stopPrank();
         vm.startPrank(flexibleMintCaller);
         vm.expectRevert();
         // flexibleMint should fail because passing in bundlePrice for what is now a quantity below new bundleQuantity
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity); 
-        minterContract.flexibleMint{
-            value:  nonBundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);    
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
+        minterContract.flexibleMint{value: nonBundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, (defaultBundleQuantity * 2));
-        assertEq(flexibleMintCaller.balance, 1 ether - (bundlePrice * defaultBundleQuantity) - (nonBundlePrice * defaultBundleQuantity));        
-        minterContract.flexibleMint{
-            value:  bundlePrice * newBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, newBundleQuantity);    
+        assertEq(
+            flexibleMintCaller.balance,
+            1 ether - (bundlePrice * defaultBundleQuantity) - (nonBundlePrice * defaultBundleQuantity)
+        );
+        minterContract.flexibleMint{value: bundlePrice * newBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, newBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, ((defaultBundleQuantity * 2) + newBundleQuantity));
-        assertEq(flexibleMintCaller.balance, 1 ether - 
-            (bundlePrice * defaultBundleQuantity) - (nonBundlePrice * defaultBundleQuantity) - (bundlePrice * newBundleQuantity));                
+        assertEq(
+            flexibleMintCaller.balance,
+            1 ether - (bundlePrice * defaultBundleQuantity) - (nonBundlePrice * defaultBundleQuantity)
+                - (bundlePrice * newBundleQuantity)
+        );
     }
 
     function test_WithdrawFunds() public setupZoraNFTBase(15) {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        CustomPricingMinter minterContract = new CustomPricingMinter(
-            nonBundlePrice,
-            bundlePrice,
-            defaultBundleQuantity
-        );
+        CustomPricingMinter minterContract = new CustomPricingMinter();
         zoraNFTBase.grantRole(zoraNFTBase.MINTER_ROLE(), address(minterContract));
         vm.stopPrank();
 
@@ -274,9 +248,9 @@ contract CustomPricingMinterTest is DSTest {
         address flexibleMintCaller = address(1);
         vm.deal(flexibleMintCaller, 1 ether);
         vm.startPrank(flexibleMintCaller);
-        minterContract.flexibleMint{
-            value: bundlePrice * defaultBundleQuantity 
-        }(address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity);
+        minterContract.flexibleMint{value: bundlePrice * defaultBundleQuantity}(
+            address(zoraNFTBase), flexibleMintCaller, defaultBundleQuantity
+        );
         assertEq(zoraNFTBase.saleDetails().totalMinted, defaultBundleQuantity);
         uint256 mintedCost = (bundlePrice * defaultBundleQuantity);
         assertEq(flexibleMintCaller.balance, 1 ether - mintedCost);
