@@ -62,6 +62,7 @@ contract Erc721AccessControl is IAccessControlRegistry {
         IERC721Upgradeable adminAccess;
     }
 
+    /// @notice name of access control mechanism
     string public constant name = "ERC721AccessControl";
 
     /// @notice access information mapping storage
