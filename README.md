@@ -4,11 +4,17 @@
 This repo contains modular implementations written in solidity that can be used to augment existing onchain infrastructure.
 
 ## Contents
+
 **tokenized-access-control**: custom modules for public curation mechanisms to allow any token to be the access control mechanism for curators.
 
 **zora-tiered-pricing-minter**: custom minting module extending standard functionality provided by the [zora-drops-contracts](https://github.com/ourzora/zora-drops-contracts) to allow for different pricing tiers based on mint quantity.
 
-**zora-tokenURI-minter**: custom minting module extending standard functionality provided by the [zora-drops-contracts](https://github.com/ourzora/zora-drops-contracts) to allow for initialization of token metadata upon mint rather than upon contract deploy
+**zora-tokenURI-minter**: custom minting module extending standard functionality provided by the [zora-drops-contracts](https://github.com/ourzora/zora-drops-contracts) to allow for initialization of token metadata upon mint rather than upon contract deploy.
+
+**theme-registry**: lets users initialize a themeIndex which a data structure that is able to be decoded into a string themeURI of their choice and then reference that address for the data it stores when needed. 
+
+**theme-admin-access-control**: custom module allowing for access schemas to be set for a uint256 themeIndex value, rather than for an address of a zoraDrop contract.
+
 
 ## Local Development
 
