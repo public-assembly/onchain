@@ -30,6 +30,26 @@ contract ERC721AccessMock is Ownable {
         return(curatorAccess, managerAccess, adminAccess);
     }
 
+    function updateAccessControl(
+        address accessControl,
+        address curatorAccess,
+        address managerAccess,
+        address adminAccess
+    ) public onlyOwner returns (address, address, address) {
+
+        bytes memory accessControlUpdate = abi.encode(
+            curatorAccess,
+            managerAccess,
+            adminAccess
+        );
+
+        IAccessControlRegistry(accessControl).updateWithData(accessControlUpdate);
+
+        accessControlProxy = accessControl;
+
+        return(curatorAccess, managerAccess, adminAccess);
+    }    
+
     function getAccessLevelForUser() external view returns (uint256) {
 
         if (accessControlProxy == address(0)) {

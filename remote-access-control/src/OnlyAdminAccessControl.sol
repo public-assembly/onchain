@@ -4,6 +4,7 @@ pragma solidity ^0.8.15;
 import {IAccessControlRegistry} from "./interfaces/IAccessControlRegistry.sol";
 
 contract OnlyAdminAccessControl is IAccessControlRegistry {
+
     //////////////////////////////////////////////////
     // ERRORS
     //////////////////////////////////////////////////
@@ -29,6 +30,13 @@ contract OnlyAdminAccessControl is IAccessControlRegistry {
         address admin
     );
 
+    /// @notice Event for a access control strategy getting updated
+    /// @dev admin function indexer feedback
+    event AccessControlUpdated(
+        address indexed accessMappingTarget,
+        address admin
+    );
+
     //////////////////////////////////////////////////
     // VARIABLES
     //////////////////////////////////////////////////
@@ -42,17 +50,6 @@ contract OnlyAdminAccessControl is IAccessControlRegistry {
     //////////////////////////////////////////////////
     // WRITE FUNCTIONS
     //////////////////////////////////////////////////
-
-    /// @notice updates admin address
-    function updateAdmin(address accessMappingTarget, address newAdmin) external {
-        if (accessMapping[accessMappingTarget] != msg.sender) {
-            revert Access_OnlyAdmin();
-        }
-
-        accessMapping[accessMappingTarget] = newAdmin;
-
-        emit AdminUpdated({accessMappingTarget: accessMappingTarget, newAdmin: newAdmin});
-    }
 
     /// @notice initializes mapping of access control
     /// @dev contract initializing access control => admin address
@@ -71,8 +68,31 @@ contract OnlyAdminAccessControl is IAccessControlRegistry {
         });
     }
 
+    /// @notice updates strategy of already initialized access control mapping
+    /// @dev must be called from the contract that has been initialized -- not the admin
+    /// @dev contract initialized to access control => admin address
+    /// @dev called by other addresses updating access control
+    /// @dev data format: admin
+    function updateWithData(bytes memory data) external {
+    
+        if (tx.origin != accessMapping[msg.sender]) {
+            revert Access_OnlyAdmin();
+        }
+
+        (address admin) = abi.decode(data, (address));
+
+        require(admin != address(0), "admin cannot be zero address");
+
+        accessMapping[msg.sender] = admin;
+
+        emit AccessControlUpdated({
+            accessMappingTarget: msg.sender,
+            admin: admin
+        });
+    }
+
     //////////////////////////////////////////////////
-    // VIEW FUNCTIONS›
+    // VIEW FUNCTIONS
     //////////////////////////////////////////////////
 
     /// @notice returns access level of a user address calling function

@@ -188,7 +188,8 @@ contract ERC721AccessControlTest is DSTest {
     }    
 
     function test_AdminAccessForACUpdates() public {
-        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+        // make sure to set address for tx.origin as well (second input in startPrank lets u do this)
+        vm.startPrank(DEFAULT_OWNER_ADDRESS, DEFAULT_OWNER_ADDRESS);
         ERC721AccessControl e721AccessControl = new ERC721AccessControl();
         erc721User.mint(DEFAULT_OWNER_ADDRESS);
         erc721Manager.mint(DEFAULT_OWNER_ADDRESS);
@@ -201,39 +202,38 @@ contract ERC721AccessControlTest is DSTest {
         );
         assertTrue(erc721AccessMock.accessControlProxy() == address(e721AccessControl));
         assertTrue(erc721AccessMock.getAccessLevelForUser() == 2);
-
         vm.expectRevert();
-        e721AccessControl.updateUserAccess(address(erc721AccessMock), address(erc721Wildcard));
-        vm.expectRevert();
-        e721AccessControl.updateManagerAccess(address(erc721AccessMock), address(erc721Wildcard));
-        vm.expectRevert();
-        e721AccessControl.updateAdminAccess(address(erc721AccessMock), address(erc721Wildcard));
-        vm.expectRevert();
-        e721AccessControl.updateAllAccess(address(erc721AccessMock), address(erc721Wildcard), address(erc721Wildcard), address(erc721Wildcard));                        
-
+        erc721AccessMock.updateAccessControl(
+            address(e721AccessControl), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard)            
+        );        
         erc721Admin.mint(DEFAULT_OWNER_ADDRESS);
-
         assertTrue(address(e721AccessControl.getUserInfo(address(erc721AccessMock))) == address(erc721User));
         assertTrue(address(e721AccessControl.getManagerInfo(address(erc721AccessMock))) == address(erc721Manager));
         assertTrue(address(e721AccessControl.getAdminInfo(address(erc721AccessMock))) == address(erc721Admin));
-        e721AccessControl.updateUserAccess(address(erc721AccessMock), address(erc721Wildcard));
-        e721AccessControl.updateManagerAccess(address(erc721AccessMock), address(erc721Wildcard));
-        e721AccessControl.updateAdminAccess(address(erc721AccessMock), address(erc721Wildcard));
+        erc721AccessMock.updateAccessControl(
+            address(e721AccessControl), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard)            
+        );     
         assertTrue(address(e721AccessControl.getUserInfo(address(erc721AccessMock))) == address(erc721Wildcard));
         assertTrue(address(e721AccessControl.getManagerInfo(address(erc721AccessMock))) == address(erc721Wildcard));
         assertTrue(address(e721AccessControl.getAdminInfo(address(erc721AccessMock))) == address(erc721Wildcard));
-
         vm.expectRevert();
-        e721AccessControl.updateUserAccess(address(erc721AccessMock), address(erc721Admin));
-        vm.expectRevert();
-        e721AccessControl.updateManagerAccess(address(erc721AccessMock), address(erc721Admin));
-        vm.expectRevert();
-        e721AccessControl.updateAdminAccess(address(erc721AccessMock), address(erc721Admin));        
+        erc721AccessMock.updateAccessControl(
+            address(e721AccessControl), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard)            
+        );            
     }
 
-
     function test_UpdateUserAccess() public {
-        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+        // make sure to set address for tx.origin as well (second input in startPrank lets u do this)
+        vm.startPrank(DEFAULT_OWNER_ADDRESS, DEFAULT_OWNER_ADDRESS);
         ERC721AccessControl e721AccessControl = new ERC721AccessControl();
         erc721Admin.mint(DEFAULT_OWNER_ADDRESS);
         ERC721AccessMock erc721AccessMock = new ERC721AccessMock();
@@ -247,12 +247,18 @@ contract ERC721AccessControlTest is DSTest {
         assertTrue(erc721AccessMock.getAccessLevelForUser() == 3);
 
         assertTrue(address(e721AccessControl.getUserInfo(address(erc721AccessMock))) == address(erc721User));
-        e721AccessControl.updateUserAccess(address(erc721AccessMock), address(erc721Wildcard));
+        erc721AccessMock.updateAccessControl(
+            address(e721AccessControl), 
+            address(erc721Wildcard), 
+            address(erc721Manager), 
+            address(erc721Admin)            
+        );
         assertTrue(address(e721AccessControl.getUserInfo(address(erc721AccessMock))) == address(erc721Wildcard));            
     }
 
     function test_UpdateManagerAccess() public {
-        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+        // make sure to set address for tx.origin as well (second input in startPrank lets u do this)
+        vm.startPrank(DEFAULT_OWNER_ADDRESS, DEFAULT_OWNER_ADDRESS);
         ERC721AccessControl e721AccessControl = new ERC721AccessControl();
         erc721Admin.mint(DEFAULT_OWNER_ADDRESS);
         ERC721AccessMock erc721AccessMock = new ERC721AccessMock();
@@ -266,12 +272,18 @@ contract ERC721AccessControlTest is DSTest {
         assertTrue(erc721AccessMock.getAccessLevelForUser() == 3);
 
         assertTrue(address(e721AccessControl.getManagerInfo(address(erc721AccessMock))) == address(erc721Manager));
-        e721AccessControl.updateManagerAccess(address(erc721AccessMock), address(erc721Wildcard));
+        erc721AccessMock.updateAccessControl(
+            address(e721AccessControl), 
+            address(erc721User), 
+            address(erc721Wildcard), 
+            address(erc721Admin)            
+        );
         assertTrue(address(e721AccessControl.getManagerInfo(address(erc721AccessMock))) == address(erc721Wildcard));             
     }    
 
     function test_UpdateAdminAccess() public {
-        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+        // make sure to set address for tx.origin as well (second input in startPrank lets u do this)
+        vm.startPrank(DEFAULT_OWNER_ADDRESS, DEFAULT_OWNER_ADDRESS);
         ERC721AccessControl e721AccessControl = new ERC721AccessControl();
         erc721Admin.mint(DEFAULT_OWNER_ADDRESS);
         ERC721AccessMock erc721AccessMock = new ERC721AccessMock();
@@ -285,12 +297,18 @@ contract ERC721AccessControlTest is DSTest {
         assertTrue(erc721AccessMock.getAccessLevelForUser() == 3);
 
         assertTrue(address(e721AccessControl.getAdminInfo(address(erc721AccessMock))) == address(erc721Admin));
-        e721AccessControl.updateAdminAccess(address(erc721AccessMock), address(erc721Wildcard));
+        erc721AccessMock.updateAccessControl(
+            address(e721AccessControl), 
+            address(erc721User), 
+            address(erc721Manager), 
+            address(erc721Wildcard)            
+        );
         assertTrue(address(e721AccessControl.getAdminInfo(address(erc721AccessMock))) == address(erc721Wildcard));         
     }      
 
     function test_UpdateAllAccess() public {
-        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+        // make sure to set address for tx.origin as well (second input in startPrank lets u do this)
+        vm.startPrank(DEFAULT_OWNER_ADDRESS, DEFAULT_OWNER_ADDRESS);
         ERC721AccessControl e721AccessControl = new ERC721AccessControl();
         erc721Admin.mint(DEFAULT_OWNER_ADDRESS);
         ERC721AccessMock erc721AccessMock = new ERC721AccessMock();
@@ -306,8 +324,13 @@ contract ERC721AccessControlTest is DSTest {
 
         assertTrue(address(e721AccessControl.getUserInfo(address(erc721AccessMock))) == address(erc721User));
         assertTrue(address(e721AccessControl.getManagerInfo(address(erc721AccessMock))) == address(erc721Manager));
-        assertTrue(address(e721AccessControl.getAdminInfo(address(erc721AccessMock))) == address(erc721Admin));      
-        e721AccessControl.updateAllAccess(address(erc721AccessMock), address(erc721Wildcard), address(erc721Wildcard), address(erc721Wildcard));
+        assertTrue(address(e721AccessControl.getAdminInfo(address(erc721AccessMock))) == address(erc721Admin));    
+        erc721AccessMock.updateAccessControl(
+            address(e721AccessControl), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard), 
+            address(erc721Wildcard)            
+        );
         assertTrue(address(e721AccessControl.getUserInfo(address(erc721AccessMock))) == address(erc721Wildcard));
         assertTrue(address(e721AccessControl.getManagerInfo(address(erc721AccessMock))) == address(erc721Wildcard));        
         assertTrue(address(e721AccessControl.getAdminInfo(address(erc721AccessMock))) == address(erc721Wildcard));         
