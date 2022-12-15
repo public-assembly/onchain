@@ -3,6 +3,7 @@ pragma solidity ^0.8.10;
 
 import {IAccessControlRegistry} from "../../src/interfaces/IAccessControlRegistry.sol";
 import {Ownable} from "openzeppelin-contracts/access/ownable.sol";
+import {console} from "forge-std/console.sol";
 
 contract OnlyAdminMock is Ownable {
 
@@ -24,6 +25,22 @@ contract OnlyAdminMock is Ownable {
         accessControlProxy = accessControl;
 
         return(admin);
+    }
+
+    function updateAccessControl(
+        address accessControl,
+        address newAdmin
+    ) public onlyOwner returns (address) {
+
+        bytes memory accessControlUpdate = abi.encode(
+            newAdmin
+        );
+
+        IAccessControlRegistry(accessControl).updateWithData(accessControlUpdate);
+
+        accessControlProxy = accessControl;
+
+        return(newAdmin);
     }
 
     function getAccessLevelForUser() external view returns (uint256) {

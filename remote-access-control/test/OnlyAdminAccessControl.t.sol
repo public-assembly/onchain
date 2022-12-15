@@ -52,8 +52,9 @@ contract OnlyAdminAccessControlTest is DSTest {
         assertTrue(mockOnlyAdmin.adminAccessTest()); 
     }        
 
-    function test_ChangeAdminAccess() public {
-        vm.startPrank(DEFAULT_OWNER_ADDRESS);
+    function test_UpdateAdminAccess() public {
+        // make sure to set address for tx.origin as well (second input in startPrank lets u do this)
+        vm.startPrank(DEFAULT_OWNER_ADDRESS, DEFAULT_OWNER_ADDRESS);
         OnlyAdminAccessControl adminAccessControl = new OnlyAdminAccessControl();
 
         OnlyAdminMock mockOnlyAdmin = new OnlyAdminMock();
@@ -67,9 +68,8 @@ contract OnlyAdminAccessControlTest is DSTest {
         assertTrue(mockOnlyAdmin.managerAccessTest());
         assertTrue(mockOnlyAdmin.adminAccessTest()); 
 
-        adminAccessControl.updateAdmin(address(mockOnlyAdmin), DEFAULT_NON_OWNER_ADDRESS);
+        mockOnlyAdmin.updateAccessControl(address(adminAccessControl), address(DEFAULT_NON_OWNER_ADDRESS));
         assertTrue(adminAccessControl.getAdminInfo(address(mockOnlyAdmin)) == DEFAULT_NON_OWNER_ADDRESS);
-        
         vm.stopPrank();
         vm.startPrank(DEFAULT_NON_OWNER_ADDRESS);
         

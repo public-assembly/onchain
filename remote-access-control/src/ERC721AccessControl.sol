@@ -3,6 +3,7 @@ pragma solidity ^0.8.15;
 
 import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import {IAccessControlRegistry} from "./interfaces/IAccessControlRegistry.sol";
+import {console} from "forge-std/console.sol";
 
 contract ERC721AccessControl is IAccessControlRegistry {
     //////////////////////////////////////////////////
@@ -52,6 +53,15 @@ contract ERC721AccessControl is IAccessControlRegistry {
         address adminAccess
     );
 
+    /// @notice Event for a access control strategy update
+    /// @dev admin function indexer feedback
+    event AccessControlUpdated(
+        address indexed accessMappingTarget,
+        address userAccess,
+        address managerAccess,
+        address adminAccess
+    );    
+
     //////////////////////////////////////////////////
     // VARIABLES
     //////////////////////////////////////////////////
@@ -72,77 +82,6 @@ contract ERC721AccessControl is IAccessControlRegistry {
     //////////////////////////////////////////////////
     // WRITE FUNCTIONS
     //////////////////////////////////////////////////
-
-    /// @notice updates ERC721 address used to define user access
-    function updateUserAccess(address accessMappingTarget, address newUserAccess)
-        external
-    {
-        if (accessMapping[accessMappingTarget].adminAccess.balanceOf(msg.sender) == 0) {
-            revert Access_OnlyAdmin();
-        }
-
-        accessMapping[accessMappingTarget].userAccess = IERC721Upgradeable(newUserAccess);
-
-        emit UserAccessUpdated({
-            accessMappingTarget: accessMappingTarget,
-            userAccess: newUserAccess
-        });
-    }
-
-    /// @notice updates ERC721 address used to define manager access
-    function updateManagerAccess(address accessMappingTarget, address newManagerAccess) 
-        external 
-    {
-        if (accessMapping[accessMappingTarget].adminAccess.balanceOf(msg.sender) == 0) {
-            revert Access_OnlyAdmin();
-        }
-
-        accessMapping[accessMappingTarget].managerAccess = IERC721Upgradeable(newManagerAccess);
-
-        emit ManagerAccessUpdated({
-            accessMappingTarget: accessMappingTarget,
-            managerAccess: newManagerAccess
-        });
-    }
-
-    /// @notice updates ERC721 address used to define admin access
-    function updateAdminAccess(address accessMappingTarget, address newAdminAccess) 
-        external 
-    {
-        if (accessMapping[accessMappingTarget].adminAccess.balanceOf(msg.sender) == 0) {
-            revert Access_OnlyAdmin();
-        }
-
-        accessMapping[accessMappingTarget].adminAccess = IERC721Upgradeable(newAdminAccess);
-
-        emit AdminAccessUpdated({
-            accessMappingTarget: accessMappingTarget, 
-            adminAccess: newAdminAccess
-        });
-    }
-
-    /// @notice updates ERC721 address used to define user, manager, and admin access
-    function updateAllAccess(
-        address accessMappingTarget,
-        address newUserAccess,
-        address newManagerAccess,
-        address newAdminAccess
-    ) external {
-        if (accessMapping[accessMappingTarget].adminAccess.balanceOf(msg.sender) == 0) {
-            revert Access_OnlyAdmin();
-        }
-
-        accessMapping[accessMappingTarget].userAccess = IERC721Upgradeable(newUserAccess);
-        accessMapping[accessMappingTarget].managerAccess = IERC721Upgradeable(newManagerAccess);
-        accessMapping[accessMappingTarget].adminAccess = IERC721Upgradeable(newAdminAccess);
-
-        emit AllAccessUpdated({
-            accessMappingTarget: accessMappingTarget,
-            userAccess: newUserAccess,
-            managerAccess: newManagerAccess,
-            adminAccess: newAdminAccess
-        });
-    }
 
     /// @notice initializes mapping of token roles
     /// @dev contract getting access control => erc721 addresses used for access control of different roles
@@ -172,6 +111,40 @@ contract ERC721AccessControl is IAccessControlRegistry {
         });
     }
 
+    /// @notice updates strategy of already initialized access control mapping
+    /// @dev must be called from the contract that has been initialized -- not the admin
+    /// @dev contract initializing access control => admin address
+    /// @dev called by other contracts initiating access control
+    /// @dev data format: admin
+    function updateWithData(bytes memory data) external {
+        
+        if (getAccessLevel(msg.sender, tx.origin) < 3) {
+            revert Access_OnlyAdmin();
+        }
+
+        (
+            address userAccess,
+            address managerAccess,
+            address adminAccess
+        ) = abi.decode(
+                data,
+                (address, address, address)
+            );
+
+        accessMapping[msg.sender] = AccessLevelInfo({
+            userAccess: IERC721Upgradeable(userAccess),
+            managerAccess: IERC721Upgradeable(managerAccess),
+            adminAccess: IERC721Upgradeable(adminAccess)
+        });
+
+        emit AccessControlUpdated({
+            accessMappingTarget: msg.sender,
+            userAccess: userAccess,
+            managerAccess: managerAccess,
+            adminAccess: adminAccess
+        });
+    }    
+
     //////////////////////////////////////////////////
     // VIEW FUNCTIONS
     //////////////////////////////////////////////////
@@ -179,7 +152,7 @@ contract ERC721AccessControl is IAccessControlRegistry {
     /// @notice returns access level of a user address calling function
     /// @dev called via the external contract initializing access control
     function getAccessLevel(address accessMappingTarget, address addressToGetAccessFor)
-        external
+        public
         view
         returns (uint256)
     {
