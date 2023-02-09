@@ -33,8 +33,8 @@ contract PlatformThemeRegistry is Ownable {
     /// @notice Contract version
     uint256 public constant version = 1;
 
-    // Stores link to docs for this contract
-    string contractDocumentation = "https://docs.public---assembly.com/";
+    // Stores link to initial docs for this contract
+    string internal _contractDocumentation = "https://docs.public---assembly.com/";
 
     // Stores platform counter
     uint256 public platformCounter = 0;
@@ -88,20 +88,19 @@ contract PlatformThemeRegistry is Ownable {
         return "PlatformThemeRegistry";
     }
 
-    /// @notice Contract Information URI Getter
-    /// @dev Used to provide contract information
-    /// @return string contract information uri
-    function contractDocs() external view returns (string memory) {
-        // return contract information uri
-        return contractDocumentation;
+    /// @notice Contract docs getter
+    /// @dev Used to provide contract documentation
+    /// @return string contract documentation uri
+    function contractDocumentation() external view returns (string memory) {
+        return _contractDocumentation;
     }
 
-    /// @notice Contract Information URI Getter
-    /// @dev Used to provide contract information
-    /// @return string contract information uri
-    function setContractDocs(string memory newContractDocs) onlyOwner external returns (string memory) {
-        contractDocumentation = newContractDocs;
-        return contractDocumentation;
+    /// @notice Update contract documentation in storage
+    /// @dev Used to update contract documentation
+    /// @return string contract documentation uri
+    function setContractDocumentation(string memory newContractDocs) onlyOwner external returns (string memory) {
+        _contractDocumentation = newContractDocs;
+        return _contractDocumentation;
     }    
 
     //////////////////////////////
