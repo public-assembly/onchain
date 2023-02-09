@@ -30,18 +30,18 @@ contract PlatformThemeRegistryTest is Test {
 
     function test_deploy() public {
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        require(keccak256(bytes(platformThemeRegistry.contractDocs())) == keccak256(bytes(testContractDocs_1)), "theme registry not deployed correctly");
+        require(keccak256(bytes(platformThemeRegistry.contractDocumentation())) == keccak256(bytes(testContractDocs_1)), "theme registry not deployed correctly");
         require(platformThemeRegistry.owner() == DEFAULT_OWNER_ADDRESS, "ownable not set correctly");        
     }
 
     function test_newContractDocs() public {
         vm.startPrank(NON_OWNER_1);
         vm.expectRevert();
-        platformThemeRegistry.setContractDocs(testContractDocs_2);
+        platformThemeRegistry.setContractDocumentation(testContractDocs_2);
         vm.stopPrank();
         vm.startPrank(DEFAULT_OWNER_ADDRESS);
-        platformThemeRegistry.setContractDocs(testContractDocs_2);
-        require(keccak256(bytes(platformThemeRegistry.contractDocs())) == keccak256(bytes(testContractDocs_2)), "theme registry not updated correctly");
+        platformThemeRegistry.setContractDocumentation(testContractDocs_2);
+        require(keccak256(bytes(platformThemeRegistry.contractDocumentation())) == keccak256(bytes(testContractDocs_2)), "theme registry not updated correctly");
     }    
 
     function test_newPlatformIndex() public {
