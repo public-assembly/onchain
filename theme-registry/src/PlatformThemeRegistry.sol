@@ -3,15 +3,13 @@ pragma solidity ^0.8.16;
 
 import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
-/// @notice Platform theme registry modified from
-///     the Zora Labs JSONExtensionRegistry implementation
-///     deployed at 0xABCDEFEd93200601e1dFe26D6644758801D732E8
+/// @title PlatformThemeRegistry
 /// @author Max Bochman
+/// @notice Modified from: Zora Labs JSON Extension Registry v1
 contract PlatformThemeRegistry is Ownable {
-
     //////////////////////////////
     /// ENUMS + TYPES
-    //////////////////////////////    
+    //////////////////////////////
 
     /// @notice Access control roles
     /// NO_ROLE = 0, MANAGER = 1, ADMIN = 2
@@ -19,13 +17,13 @@ contract PlatformThemeRegistry is Ownable {
         NO_ROLE,
         MANAGER,
         ADMIN
-    }       
+    }
 
     struct RoleDetails {
         address account;
         Roles role;
-    } 
-    
+    }
+
     //////////////////////////////
     /// STORAGE
     //////////////////////////////
@@ -33,7 +31,7 @@ contract PlatformThemeRegistry is Ownable {
     /// @notice Contract version
     uint256 public constant version = 1;
 
-    // Stores link to initial docs for this contract
+    // Stores link to initial documentation for this contract
     string internal _contractDocumentation = "https://docs.public---assembly.com/";
 
     // Stores platform counter
@@ -57,38 +55,24 @@ contract PlatformThemeRegistry is Ownable {
     /// EVENTS
     //////////////////////////////
 
-    event PlatformThemeUpdated(
-        uint256 indexed platformIndex,
-        address sender,
-        string newTheme 
-    );
+    event PlatformThemeUpdated(uint256 indexed platformIndex, address sender, string newTheme);
 
-    event RoleGranted(
-        uint256 indexed platformIndex,
-        address sender,
-        address account,
-        Roles role 
-    );    
+    event RoleGranted(uint256 indexed platformIndex, address sender, address account, Roles role);
 
-    event RoleRevoked(
-        uint256 indexed platformIndex,
-        address sender,
-        address account,
-        Roles role 
-    );        
+    event RoleRevoked(uint256 indexed platformIndex, address sender, address account, Roles role);
 
     //////////////////////////////
     /// CONTRACT INFO
     //////////////////////////////
 
-    /// @notice Contract Name Getter
+    /// @notice Contract name getter
     /// @dev Used to identify contract
     /// @return string contract name
     function name() external pure returns (string memory) {
         return "PlatformThemeRegistry";
     }
 
-    /// @notice Contract docs getter
+    /// @notice Contract documentation getter
     /// @dev Used to provide contract documentation
     /// @return string contract documentation uri
     function contractDocumentation() external view returns (string memory) {
@@ -98,10 +82,10 @@ contract PlatformThemeRegistry is Ownable {
     /// @notice Update contract documentation in storage
     /// @dev Used to update contract documentation
     /// @return string contract documentation uri
-    function setContractDocumentation(string memory newContractDocs) onlyOwner external returns (string memory) {
+    function setContractDocumentation(string memory newContractDocs) external onlyOwner returns (string memory) {
         _contractDocumentation = newContractDocs;
         return _contractDocumentation;
-    }    
+    }
 
     //////////////////////////////
     /// ADMIN
@@ -109,27 +93,19 @@ contract PlatformThemeRegistry is Ownable {
 
     /// @notice isAdmin getter for a target index
     /// @param platformIndex target platform index
-    /// @param account account to check
-    function _isAdmin(uint256 platformIndex, address account)
-        internal
-        view
-        returns (bool)
-    {
+    /// @param account address to check
+    function _isAdmin(uint256 platformIndex, address account) internal view returns (bool) {
         // Return true/false depending on whether account is an admin
         return roleInfo[platformIndex][account] != Roles.ADMIN ? false : true;
     }
 
     /// @notice isAdmin getter for a target index
     /// @param platformIndex target platform index
-    /// @param account account to check
-    function _isAdminOrManager(uint256 platformIndex, address account)
-        internal
-        view
-        returns (bool)
-    {
+    /// @param account address to check
+    function _isAdminOrManager(uint256 platformIndex, address account) internal view returns (bool) {
         // Return true/false depending on whether account is an admin or manager
         return roleInfo[platformIndex][account] != Roles.NO_ROLE ? true : false;
-    }    
+    }
 
     /// @notice Only allowed for contract admin
     /// @param platformIndex target platform index
@@ -151,15 +127,12 @@ contract PlatformThemeRegistry is Ownable {
         }
 
         _;
-    }    
+    }
 
     /// @notice Grants new roles for given platform index
     /// @param platformIndex target platform index
-    /// @param roleDetails array of roleDetails structs
-    function grantRoles(uint256 platformIndex, RoleDetails[] memory roleDetails) 
-        onlyAdmin(platformIndex) 
-        external
-    {
+    /// @param roleDetails array of RoleDetails structs
+    function grantRoles(uint256 platformIndex, RoleDetails[] memory roleDetails) external onlyAdmin(platformIndex) {
         // grant roles to each [account, role] provided
         for (uint256 i; i < roleDetails.length; ++i) {
             // check that role being granted is a valid role
@@ -175,16 +148,13 @@ contract PlatformThemeRegistry is Ownable {
                 account: roleDetails[i].account,
                 role: roleDetails[i].role
             });
-        }    
+        }
     }
 
     /// @notice Revokes roles for given platform index
     /// @param platformIndex target platform index
     /// @param accounts array of addresses to revoke roles from
-    function revokeRoles(uint256 platformIndex, address[] memory accounts) 
-        onlyAdmin(platformIndex) 
-        external
-    {
+    function revokeRoles(uint256 platformIndex, address[] memory accounts) external onlyAdmin(platformIndex) {
         // revoke roles from each account provided
         for (uint256 i; i < accounts.length; ++i) {
             // revoke role from account
@@ -196,8 +166,8 @@ contract PlatformThemeRegistry is Ownable {
                 account: accounts[i],
                 role: Roles.NO_ROLE
             });
-        }    
-    } 
+        }
+    }
 
     /// @notice Get role for given platform index + account
     /// @param platformIndex target platform index
@@ -225,44 +195,24 @@ contract PlatformThemeRegistry is Ownable {
         // grant admin role to account
         roleInfo[currentPlatform][account] = Roles.ADMIN;
 
-        emit RoleGranted({
-            platformIndex: currentPlatform,
-            sender: sender,
-            account: account,
-            role: Roles.ADMIN
-        });
+        emit RoleGranted({platformIndex: currentPlatform, sender: sender, account: account, role: Roles.ADMIN});
 
-        emit PlatformThemeUpdated({
-            platformIndex: currentPlatform,
-            sender: sender,
-            newTheme: uri
-        });
-    }    
+        emit PlatformThemeUpdated({platformIndex: currentPlatform, sender: sender, newTheme: uri});
+    }
 
     /// @notice Set platform theme -> string
     /// @dev Used to provide string information for rendering
     /// @param platformIndex target platform index
     /// @param uri uri to set metadata to
-    function setPlatformTheme(uint256 platformIndex, string memory uri)
-        external
-        onlyAdminOrManager(platformIndex)
-    {
+    function setPlatformTheme(uint256 platformIndex, string memory uri) external onlyAdminOrManager(platformIndex) {
         platformThemeInfo[platformIndex] = uri;
-        emit PlatformThemeUpdated({
-            platformIndex: platformIndex,
-            sender: msg.sender,
-            newTheme: uri
-        });
+        emit PlatformThemeUpdated({platformIndex: platformIndex, sender: msg.sender, newTheme: uri});
     }
 
     /// @notice Getter for platformIndex -> uri string
     /// @param platformIndex target platform index
     /// @return address string for target
-    function getPlatformTheme(uint256 platformIndex)
-        external
-        view
-        returns (string memory)
-    {
+    function getPlatformTheme(uint256 platformIndex) external view returns (string memory) {
         return platformThemeInfo[platformIndex];
     }
 }
