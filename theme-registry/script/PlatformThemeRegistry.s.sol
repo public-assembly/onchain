@@ -20,4 +20,4 @@ contract DeployCore is ScriptBase {
 
 // source .env
 // forge script script/PlatformThemeRegistry.s.sol:DeployCore --rpc-url $GOERLI_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify  -vvvv
-// forge script script/PlatformThemeRegistry.s.sol:DeployCore --rpc-url $MAINNET_RPC_URL --broadcast --verify  -vvvv
+// forge script script/PlatformThemeRegistry.s.sol:DeployCore --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify  -vvvv
