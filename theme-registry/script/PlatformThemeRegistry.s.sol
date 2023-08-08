@@ -11,7 +11,7 @@ contract DeployCore is ScriptBase {
         bytes memory creationCode = type(PlatformThemeRegistry).creationCode;
         console2.logBytes32(keccak256(creationCode));
         bytes32 salt = bytes32(0x00000000000000000000000000000000000000004757574f055940000019129c);
-        vm.broadcast(deployer);
+        vm.broadcast(deployerPrivateKey);
         IMMUTABLE_CREATE2_FACTORY.safeCreate2(salt, creationCode);
     }
 }
@@ -21,3 +21,4 @@ contract DeployCore is ScriptBase {
 // source .env
 // forge script script/PlatformThemeRegistry.s.sol:DeployCore --rpc-url $GOERLI_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify  -vvvv
 // forge script script/PlatformThemeRegistry.s.sol:DeployCore --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify  -vvvv
+// forge script script/PlatformThemeRegistry.s.sol:DeployCore --rpc-url $BASE_RPC_URL --private-key $PRIVATE_KEY --broadcast -vvvv
